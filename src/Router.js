@@ -303,4 +303,17 @@ class Router {
 
     }
 
+    load({
+        append = true,
+        fragments = [],
+        scripts = [],
+        selector = '',
+        styles = [],
+        title = ''
+    }) {
+
+        return this.#pageBuild({ caller: 'load', append, fragments, scripts, selector, styles, title });
+
+    }
+
 }
