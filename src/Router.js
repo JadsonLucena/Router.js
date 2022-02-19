@@ -183,4 +183,124 @@ class Router {
 
     }
 
+    #pageBuild(state) {
+
+        if (state.title)
+            document.title = state.title;
+
+
+        if (!state.append)
+            document.querySelector(state.selector).innerHTML = '';
+
+
+        return Promise.all([
+            this.#loadStyles(state.styles),
+            this.#loadFragments(state.fragments),
+            this.#loadScripts(state.scripts)
+        ]).then(async ([styles, fragments, scripts]) => {
+
+            let result = {
+                styles,
+                fragments: [],
+                scripts: []
+            };
+
+
+            if (state.caller == 'redirect') {
+
+                for (let node of document.querySelectorAll('.router-fragment')) {
+
+                    node.remove();
+
+                }
+
+            }
+
+
+            for (let link of document.querySelectorAll('.router-fragment--tmp')) {
+
+                link.classList.replace('router-fragment--tmp', 'router-fragment');
+
+            }
+
+
+            fragments.forEach((children, index) => {
+
+                if (children.status == 'fulfilled') {
+
+                    children.value.forEach(fragment => document.querySelector(state.selector).append(fragment));
+
+                    result.fragments.push({
+                        status: children.status,
+                        value: state.fragments[index]
+                    });
+
+                } else {
+
+                    result.fragments.push(children);
+
+                }
+
+            });
+
+
+            for (let index in scripts) {
+
+                result.scripts.push(await new Promise(resolve => {
+
+                    try {
+
+                        if (scripts[index].status == 'fulfilled') {
+
+                            if (scripts[index].value.hasAttribute('src')) {
+
+                                scripts[index].value.onload = () => resolve({
+                                    status: scripts[index].status,
+                                    value: state.scripts[index]
+                                });
+                                scripts[index].value.onerror = err => resolve({
+                                    state: 'rejected',
+                                    reason: err
+                                });
+
+                                document.documentElement.append(scripts[index].value);
+
+                            } else {
+
+                                document.documentElement.append(scripts[index].value);
+
+                                resolve({
+                                    status: scripts[index].status,
+                                    value: state.scripts[index]
+                                });
+
+                            }
+
+                        } else {
+
+                            resolve(scripts[index]);
+
+                        }
+
+                    } catch (err) {
+
+                        resolve({
+                            state: 'rejected',
+                            reason: err
+                        });
+
+                    }
+
+                }));
+
+            }
+
+
+
+            return result;
+
+        });
+
+    }
+
 }
