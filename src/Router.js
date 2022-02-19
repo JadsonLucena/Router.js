@@ -73,4 +73,56 @@ class Router {
 
     }
 
+    #loadScripts(scripts) {
+
+        return Promise.allSettled(scripts.map(script => new Promise((resolve, reject) => {
+
+            try {
+
+                let js = document.createElement('script');
+                    // js.type = 'text/javascript';
+
+                let url = this.#isURL(script);
+                if (url) {
+
+                    url.searchParams.forEach((value, key) => {
+
+                        if (['async', 'class', 'crossorigin', 'defer', 'id', 'integrity', 'nomodule', 'referrerpolicy', 'type'].includes(key)) {
+
+                            js.setAttribute(key, value)
+
+                            url.searchParams.delete(key);
+
+                        }
+
+                    });
+
+
+                    js.classList.add('router-fragment');
+                    js.src = url.href;
+                    js.onerror = reject;
+
+
+                    resolve(js);
+
+                } else {
+
+                    js.className = 'router-fragment';
+                    js.textContent = script;
+
+
+                    resolve(js);
+
+                }
+
+            } catch (err) {
+
+                reject(err);
+
+            }
+
+        })));
+
+    }
+
 }
