@@ -316,6 +316,44 @@ class Router {
 
     }
 
+    #typeGuard(state) {
+
+        if (state.fragments.length && state.fragments.some(fragment => !fragment || typeof fragment != 'string')) {
+
+            throw new TypeError('Unsupported Fragments');
+
+        } else if (state.scripts.length && state.scripts.some(script => !script || typeof script != 'string')) {
+
+            throw new TypeError('Unsupported Scripts');
+
+        } else if (typeof state.selector != 'string' || (state.selector && !document.querySelector(state.selector))) {
+
+            throw new TypeError('Unsupported Selector');
+
+        } else if (state.styles.length && state.styles.some(style => !style || typeof style != 'string')) {
+
+            throw new TypeError('Unsupported Styles');
+
+        } else if (typeof state.title != 'string') {
+
+            throw new TypeError('Unsupported Title');
+
+        } else if (state.fragments.length && !state.selector) {
+
+            throw new SyntaxError('Required Selector');
+
+        } else if (state.selector && !state.fragments.length) {
+
+            throw new SyntaxError('Required Fragments');
+
+        } else if (!state.fragments.length && !state.scripts.length && !state.styles.length && !state.selector && !state.title) {
+
+            throw new TypeError('More arguments are needed');
+
+        }
+
+    }
+
     load({
         append = true,
         fragments = [],
@@ -326,6 +364,8 @@ class Router {
     }) {
 
         let state = this.#sanitize({ append, fragments, scripts, selector, styles, title });
+
+        this.#typeGuard(state);
 
         return this.#pageBuild(Object.assign({ caller: 'load' }, state));
 
