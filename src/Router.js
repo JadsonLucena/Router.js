@@ -125,4 +125,62 @@ class Router {
 
     }
 
+    #loadStyles(styles) {
+
+        return Promise.allSettled(styles.map(style => new Promise((resolve, reject) => {
+
+            try {
+
+                let url = this.#isURL(style);
+                if (url) {
+
+                    let css = document.createElement('link');
+
+                    url.searchParams.forEach((value, key) => {
+
+                        if (['class', 'crossorigin', 'hreflang', 'id', 'media', 'referrerpolicy', 'sizes', 'title'].includes(key)) {
+
+                            css.setAttribute(key, value);
+
+                            url.searchParams.delete(key);
+
+                        }
+
+                    });
+
+                    css.type = 'text/css';
+                    css.rel = 'stylesheet';
+                    css.classList.add('router-fragment--tmp');
+                    css.href = url.href;
+                    css.onload = () => resolve(style);
+                    css.onerror = reject;
+
+
+                    document.head.append(css);
+
+                } else {
+
+                    let css = document.createElement('style');
+                        css.className = 'router-fragment--tmp';
+                        // css.type = 'text/css';
+                        css.textContent = style;
+
+
+                    document.head.append(css);
+
+
+                    resolve(style);
+
+                }
+
+            } catch (err) {
+
+                reject(err);
+
+            }
+
+        })));
+
+    }
+
 }
