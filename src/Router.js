@@ -303,6 +303,19 @@ class Router {
 
     }
 
+    #sanitize(state) {
+
+        state.append = Boolean(state.append);
+        state.fragments = [].concat(state.fragments).map(e => typeof e == 'string' ? e.trim() : e);
+        state.scripts = [].concat(state.scripts).map(e => typeof e == 'string' ? e.trim() : e);
+        state.selector = typeof state.selector == 'string' ? state.selector.trim() : state.selector;
+        state.styles = [].concat(state.styles).map(e => typeof e == 'string' ? e.trim() : e);
+        state.title = typeof state.title == 'string' ? state.title.trim() : state.title;
+
+        return state;
+
+    }
+
     load({
         append = true,
         fragments = [],
@@ -312,7 +325,9 @@ class Router {
         title = ''
     }) {
 
-        return this.#pageBuild({ caller: 'load', append, fragments, scripts, selector, styles, title });
+        let state = this.#sanitize({ append, fragments, scripts, selector, styles, title });
+
+        return this.#pageBuild(Object.assign({ caller: 'load' }, state));
 
     }
 
