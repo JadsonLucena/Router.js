@@ -1,6 +1,10 @@
 class Router {
 
-    constructor() {}
+    constructor() {
+
+        window.onpopstate = e => e.state && this.redirect(e.state);
+
+    }
 
     #isURL(href) {
 
