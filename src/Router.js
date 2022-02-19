@@ -371,4 +371,44 @@ class Router {
 
     }
 
+    redirect({
+        append = false,
+        fragments = [],
+        path = '',
+        scripts = [],
+        selector = '',
+        styles = [],
+        title = document.title
+    } = {}) {
+
+        if (typeof path != 'string') {
+
+            throw new TypeError('Unsupported Path');
+
+        } else if (!title || typeof title != 'string') {
+
+            throw new TypeError('Unsupported Title');
+
+        }
+
+
+        let state = this.#sanitize({ append, fragments, scripts, selector, styles, title });
+
+        this.#typeGuard(state);
+
+
+        if (path) {
+
+            history.pushState(state, title, path);
+
+        } else {
+
+            history.replaceState(state, title, location.href);
+
+        }
+
+        return this.#pageBuild(Object.assign({ caller: 'redirect'}, state ));
+
+    }
+
 }
